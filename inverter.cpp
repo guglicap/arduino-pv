@@ -1,8 +1,14 @@
 #include "inverter.h"
 
-Inverter::Inverter(int rxPin, int txPin, uint16_t addr = ADDR_HOST) {
-	SoftwareSerial conn(rxPin, txPin);
-	_conn = conn;
+Inverter::Inverter(SoftwareSerial& conn, uint16_t addr) {
+	_output = conn;
+	_input = conn;
+	_addr = addr;
+}
+
+Inverter::Inverter(uint16_t addr) {
+	_output = Serial;
+	_input = Serial;
 	_addr = addr;
 }
 
@@ -11,23 +17,23 @@ void Inverter::send(Frame* frm) {
 		return;
 	}
 	uint8_t* bytes = frm -> bytes();
-	_conn.write(bytes, sizeof(bytes));
+	_output.write(bytes, sizeof(bytes));
 	return;
 }
 
 Frame Inverter::receive() {
-	if (_conn.available() < 11) {
+	if (_input.available() < 11) {
 		return Frame(CMD_ERR); //not enough data to make a valid frame
 	}
 	uint8_t buf[MAX_SIZE];
 	// read up to payload
 	for (int i = 0; i < 9; i++) {
-		buf[i] = _conn.read();
+		buf[i] = _input.read();
 	}
 	uint8_t ploadLen = buf[8];
 	// read payload + checksum
 	for (int i = 0; i < ploadLen + 2; i++) {
-		buf[8+i] = _conn.read();
+		buf[8+i] = _input.read();
 	}
 	return parseFrame(buf);
 }

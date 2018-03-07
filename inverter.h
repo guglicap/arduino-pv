@@ -9,7 +9,8 @@
 class Inverter 
 {
 	public:
-		Inverter(int rxPin, int txPin, uint16_t addr);
+		Inverter(SoftwareSerial& conn, uint16_t addr = ADDR_HOST);
+		explicit Inverter(uint16_t addr = ADDR_HOST);
 		Frame receive();
 		void send(Frame* frm);
 		void reset();
@@ -17,7 +18,8 @@ class Inverter
 		bool begin(String serial, uint16_t addr = ADDR_DEV);
 		String version(uint16_t dst = ADDR_DEV);
 	private:
-		SoftwareSerial& _conn;
+		Print& _output;
+		Stream& _input;
 		uint16_t _addr;
 };
 #endif
