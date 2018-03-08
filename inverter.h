@@ -1,6 +1,8 @@
 #ifndef CMS2000_h
 #define CMS2000_h
 
+#define RECV_TIMEOUT 5000 //ms
+
 #include "Arduino.h"
 #include "stdint.h"
 #include "SoftwareSerial.h"

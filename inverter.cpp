@@ -22,8 +22,14 @@ void Inverter::send(Frame* frm) {
 }
 
 Frame Inverter::receive() {
-	if (_input.available() < 11) {
-		return Frame(CMD_ERR); //not enough data to make a valid frame
+	long start = millis();
+	// wait until we have enough data to make a valid frame
+	while (_input.available() < 11) {
+		if (millis() - start > RECV_TIMEOUT) {
+			Frame f(CMD_ERR);
+			f._payload = "timed out while receiving frame";
+			return f;
+		}
 	}
 	uint8_t buf[MAX_SIZE];
 	// read up to payload
