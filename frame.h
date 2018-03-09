@@ -2,9 +2,10 @@
 #define FRAME_H
 
 #include "stdint.h"
+#include "debug.h"
 
-#define MAX_PLOAD_SIZE 256
-#define	MAX_SIZE 		MAX_PLOAD_SIZE + 11			// Arbitrary max frame size
+#define	MAX_SIZE 		256
+#define MAX_PLOAD_SIZE		MAX_SIZE - 11
 #define	SYNC 			0xaaaa		// 2 sync bytes preamble "1010101010101010"
 #define	ADDR_DEFAULT 	0x0000		// Broadcast address
 #define	ADDR_HOST 		0x0100		// Default host address
@@ -47,17 +48,18 @@
 #define CMD_ERR		0xFFAA		// Used to signal an error in frame processing
 #define	CMD_ZRO_R 	0x0380		// Reset inverter E-Total and h-Total ACK
 
+
 class Frame
 {
 	public:
 		explicit Frame(uint16_t cmd, uint8_t* payload = nullptr, uint8_t ploadLen = 0, uint16_t src = ADDR_DEFAULT, uint16_t dst = ADDR_DEFAULT);
-		uint8_t* bytes();
+		uint8_t bytes(uint8_t* buf);
 		uint8_t* _payload;
 		uint16_t _cmd;
 		uint16_t _src,_dst;
 		uint8_t _ploadLen;
 };
 
-Frame parseFrame(uint8_t data[]);
+Frame parseFrame(uint8_t data[], uint16_t len);
 uint16_t checksum(uint8_t data[], int len);
 #endif
