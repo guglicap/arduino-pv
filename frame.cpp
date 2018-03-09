@@ -21,8 +21,7 @@ Frame parseFrame(uint8_t data[], uint16_t len) {
 		__debug("frame length is less than 11 bytes, returning");
 		return Frame(CMD_ERR);
 	}
-	// the received one is big-endian, we want ours to be little endian
-	uint16_t recvChecksum = __b2u16(data[len - 1], data[len - 2]);
+	uint16_t recvChecksum = __b2u16(data[len - 2], data[len - 1]);
 	if (checksum(data, len - 2) != recvChecksum) {
 		char dbgMsg[256];
 		sprintf(dbgMsg, "received checksum and calculated checksum do not match: %x vs %x ,returning", recvChecksum, checksum(data, len - 2));
@@ -30,15 +29,15 @@ Frame parseFrame(uint8_t data[], uint16_t len) {
 		return Frame(CMD_ERR);
 	}
 	__debug("checksums match, ok");
-	uint16_t preamble = __b2u16(data[1], data[0]);
+	uint16_t preamble = __b2u16(data[0], data[1]);
 	if (preamble != SYNC) {
 		__debug("frame preamble doesn't match SYNC");
 		return Frame(CMD_ERR);
 	}	
 	__debug("frame preamble is SYNC, ok");
-	uint16_t src = __b2u16(data[3], data[2]);
-	uint16_t dst = __b2u16(data[5], data[4]);
-	uint16_t cmd = __b2u16(data[7], data[6]);
+	uint16_t src = __b2u16(data[2], data[3]);
+	uint16_t dst = __b2u16(data[4], data[5]);
+	uint16_t cmd = __b2u16(data[6], data[7]);
 	uint8_t ploadLen = data[8];
 	if (ploadLen > MAX_SIZE - 11) {
 		__debug("length of payload exceeds max size");
@@ -66,14 +65,14 @@ uint16_t checksum(uint8_t data[], int len) {
 }
 
 uint8_t Frame::bytes(uint8_t* buf) {
-	buf[0] = SYNC & 0xff; // low byte
-	buf[1] = SYNC >> 8; //high byte
-	buf[2] = _src & 0xff;
-	buf[3] = _src >> 8;
-	buf[4] = _dst & 0xff;
-	buf[5] = _dst >> 8;
-	buf[6] = _cmd & 0xff;
-	buf[7] = _cmd >> 8;
+	buf[0] = SYNC >> 8; // high byte
+	buf[1] = SYNC & 0xff; // low byte
+	buf[2] = _src >> 8;
+	buf[3] = _src & 0xff;
+	buf[4] = _dst >> 8;
+	buf[5] = _dst & 0xff;
+	buf[6] = _cmd >> 8;
+	buf[7] = _cmd & 0xff;
 	buf[8] = _ploadLen;
 	if (_ploadLen > 0 && ! _payload) {
 		__debug("specified payload length, but no payload could be found, returning");
@@ -83,8 +82,8 @@ uint8_t Frame::bytes(uint8_t* buf) {
 		buf[8 + i] = _payload[i];
 	}
 	uint16_t _checksum = checksum(buf, 9 + _ploadLen);
-	buf[9 + _ploadLen] = _checksum & 0xff;
-	buf[10 + _ploadLen] = _checksum >> 8;
+	buf[9 + _ploadLen] = _checksum >> 8;
+	buf[10 + _ploadLen] = _checksum & 0xff;
 	__debug("converted Frame to bytes, ok, returning bytes");
 	return 11 + _ploadLen;
 }
