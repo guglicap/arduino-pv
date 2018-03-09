@@ -10,12 +10,15 @@ Inverter::Inverter(uint16_t addr) {
 	_addr = addr;
 }
 
-void Inverter::send(Frame frm) {
+void Inverter::send(Frame frm, bool useFrameSrc) {
 	if (frm._cmd == CMD_ERR) {
 		__debug("error frame, returning");
 		return;
 	}
 	uint8_t buf[MAX_SIZE];
+	if (!useFrameSrc) {
+		frm._src = _addr;
+	}
 	uint8_t len = frm.bytes(buf);
 	if (len == 0) {
 		__debug("error converting Frame to bytes, returning");
