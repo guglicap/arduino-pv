@@ -5,11 +5,6 @@ Inverter::Inverter(Stream* conn, uint16_t addr) {
 	_addr = addr;
 }
 
-Inverter::Inverter(uint16_t addr) {
-	_conn = &Serial;
-	_addr = addr;
-}
-
 void Inverter::send(Frame frm, bool useFrameSrc) {
 	if (frm._cmd == CMD_ERR) {
 		__debug("error frame, returning");

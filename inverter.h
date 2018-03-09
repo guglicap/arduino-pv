@@ -12,8 +12,7 @@
 class Inverter 
 {
 	public:
-		Inverter(Stream* conn, uint16_t addr = ADDR_HOST);
-		explicit Inverter(uint16_t addr = ADDR_HOST);
+		explicit Inverter(Stream* conn = &Serial, uint16_t addr = ADDR_HOST);
 		Frame receive();
 		void send(Frame frm, bool useFrameSrc = false);
 		void reset();
