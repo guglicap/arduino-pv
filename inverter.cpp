@@ -31,7 +31,8 @@ Frame Inverter::receive() {
 	// wait until we have enough data to make a valid frame
 	while (_conn -> available() < 9) {
 		if (millis() - start > RECV_TIMEOUT) {
-			goto fail;
+			__debug("timed out while receiving frame, returning");
+			return Frame(CMD_ERR);
 		}
 	}
 	uint8_t buf[MAX_SIZE];
@@ -45,7 +46,8 @@ Frame Inverter::receive() {
 	__debug(ploadLen);
 	while (_conn -> available() < ploadLen + 2) {
 		if (millis() - start > RECV_TIMEOUT) {
-			goto fail;
+			__debug("timed out while receiving frame, returning");
+			return Frame(CMD_ERR);
 		}
 	}
 	for (int i = 0; i < ploadLen + 2; i++) {
@@ -53,10 +55,6 @@ Frame Inverter::receive() {
 	}
 	__debug("read payload, ok, parsing frame");
 	return parseFrame(buf, 11 + ploadLen);
-fail:
-	__debug("timed out while receiving frame, returning");
-	Frame f(CMD_ERR);
-	return f;
 }
 
 void Inverter::reset() {
