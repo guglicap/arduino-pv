@@ -16,8 +16,8 @@ class Inverter
 		Frame receive();
 		void send(Frame frm, bool useFrameSrc = false);
 		void reset();
-		String discover();
-		bool begin(String serial, uint16_t addr = ADDR_DEV);
+		uint8_t discover(uint8_t* buf);
+		bool begin(uint8_t* sn, uint8_t snLen, uint16_t addr = ADDR_DEV);
 		String version(uint16_t dst = ADDR_DEV);
 	private:
 		Stream* _conn;

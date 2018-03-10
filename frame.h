@@ -60,6 +60,6 @@ class Frame
 		uint8_t _ploadLen;
 };
 
-Frame parseFrame(uint8_t data[], uint16_t len);
-uint16_t checksum(uint8_t data[], int len);
+Frame parseFrame(uint8_t data[], uint8_t len);
+uint16_t checksum(uint8_t data[], uint8_t len);
 #endif

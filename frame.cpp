@@ -12,7 +12,7 @@ Frame::Frame(uint16_t cmd, uint8_t* payload, uint8_t ploadLen, uint16_t src, uin
 	_dst = dst;
 }
 
-Frame parseFrame(uint8_t data[], uint16_t len) {
+Frame parseFrame(uint8_t data[], uint8_t len) {
 	// the frame format is as follows
 	// <sync> <src> <dst> <cmd> <len> <payload> <checksum>
 	// 2b     2b    2b    2b    1b    len b     2b
@@ -21,13 +21,19 @@ Frame parseFrame(uint8_t data[], uint16_t len) {
 		__debug("frame length is less than 11 bytes, returning");
 		return Frame(CMD_ERR);
 	}
+	for (int i = 0; i < len; i++) {
+		Serial.print(data[i], HEX);
+		Serial.print('-');
+	}
+	Serial.println();
 	uint16_t recvChecksum = __b2u16(data[len - 2], data[len - 1]);
 	if (checksum(data, len - 2) != recvChecksum) {
 		char dbgMsg[256];
-		sprintf(dbgMsg, "received checksum and calculated checksum do not match: %x vs %x ,returning", recvChecksum, checksum(data, len - 2));
+		snprintf(dbgMsg, 256, "received checksum and calculated checksum do not match: %x vs %x ,returning", recvChecksum, checksum(data, len - 2));
 		__debug(dbgMsg);
 		return Frame(CMD_ERR);
 	}
+	Serial.println(recvChecksum, HEX);
 	__debug("checksums match, ok");
 	uint16_t preamble = __b2u16(data[0], data[1]);
 	if (preamble != SYNC) {
@@ -39,12 +45,12 @@ Frame parseFrame(uint8_t data[], uint16_t len) {
 	uint16_t dst = __b2u16(data[4], data[5]);
 	uint16_t cmd = __b2u16(data[6], data[7]);
 	uint8_t ploadLen = data[8];
-	if (ploadLen > MAX_SIZE - 11) {
+	if (ploadLen > MAX_PLOAD_SIZE) {
 		__debug("length of payload exceeds max size");
 		return Frame(CMD_ERR);
 	}
 	char debugMsg[50];
-	sprintf(debugMsg, "payload has length %d", ploadLen);
+	snprintf(debugMsg, 50, "ploadLen equals 0x%02x", ploadLen);
 	__debug(debugMsg);
 	uint8_t* payload;
 	if (ploadLen > 0) {
@@ -56,7 +62,7 @@ Frame parseFrame(uint8_t data[], uint16_t len) {
 	return Frame(cmd, payload, ploadLen, src, dst);
 }
 
-uint16_t checksum(uint8_t data[], int len) {
+uint16_t checksum(uint8_t data[], uint8_t len) {
 	uint16_t result = 0;
 	for (int i = 0; i < len; i++) {
 		result += data[i];

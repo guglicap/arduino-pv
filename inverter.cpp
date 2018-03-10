@@ -20,6 +20,11 @@ void Inverter::send(Frame frm, bool useFrameSrc) {
 		return;
 	}
 	__debug("sending frame");
+	for (int i = 0; i < len; i++) {
+		Serial.print(buf[i], HEX);
+		Serial.print('-');
+	}
+	Serial.println();
 	_conn -> write(buf, len);
 }
 
@@ -41,7 +46,9 @@ Frame Inverter::receive() {
 	__debug("read up to payload, ok");
 	uint8_t ploadLen = buf[8];
 	// read payload + checksum
-	__debug(ploadLen);
+	char dbgMsg[50];
+	snprintf(dbgMsg, 50, "ploadLen equals 0x%02x", ploadLen);
+	__debug(dbgMsg);
 	while (_conn -> available() < ploadLen + 2) {
 		if (millis() - start > RECV_TIMEOUT) {
 			__debug("timed out while receiving frame, returning");
@@ -49,7 +56,7 @@ Frame Inverter::receive() {
 		}
 	}
 	for (int i = 0; i < ploadLen + 2; i++) {
-		buf[8+i] = _conn -> read();
+		buf[9+i] = _conn -> read();
 	}
 	__debug("read payload, ok, parsing frame");
 	return parseFrame(buf, 11 + ploadLen);
@@ -60,30 +67,36 @@ void Inverter::reset() {
 	send(Frame(CMD_RST));
 }
 
-String Inverter::discover() {
+uint8_t Inverter::discover(uint8_t* buf) {
 	__debug("sending discover");
-	send(Frame(CMD_DSC));
-	Frame f = receive();
-	if (f._cmd != CMD_REG_R) {
+	Frame f(CMD_DSC);
+	send(f);
+	f = receive();
+	if (f._cmd != CMD_DSC_R) {
+		char dbgMsg[50];
+		snprintf(dbgMsg, 50, "frame cmd equals %02x:%02x", f._cmd >> 8, f._cmd & 0xff);
+		__debug(dbgMsg);
 		__debug("invalid response frame, returning");
-		return "";
+		return 0;
 	}
-	return String((char*) f._payload);
+	memcpy(buf, f._payload, f._ploadLen);
+	return f._ploadLen;
 }
 
-bool Inverter::begin(String serial, uint16_t addr) {
-	uint8_t buf[MAX_PLOAD_SIZE];
-	uint8_t* sn = serial.c_str();
-	uint16_t snLen = serial.length(); //length excludes the null terminator
-	if (snLen > MAX_PLOAD_SIZE - 2) {
+bool Inverter::begin(uint8_t* sn, uint8_t snLen, uint16_t addr) {
+	uint8_t buf[50];	
+	if (snLen > 50 - 2) {
 		__debug("serial number is too long, returning");
 		return false;
 	}
-	memcpy(buf, sn, snLen); //so we're only copying the string characters
+	for (int i = 0; i < snLen; i++) {
+		buf[i] = sn[i];
+	}
 	buf[snLen] = addr & 0xff;
 	buf[snLen + 1] = addr >> 8;
-	send(Frame(CMD_REG, buf, sizeof(sn) + 2));
-	Frame f = receive();
+	Frame f(CMD_REG, buf, snLen + 2);
+	send(f);
+	f = receive();
 	return f._cmd == CMD_REG_R;
 }
 
