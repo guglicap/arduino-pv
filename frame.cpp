@@ -18,7 +18,9 @@ Frame parseFrame(uint8_t data[], uint8_t len) {
 	// 2b     2b    2b    2b    1b    len b     2b
 	// thus, the frame cannot be shorter than 11 bytes
 	if (len < 11) {
-		__debug("frame length is less than 11 bytes, returning");
+#if SUNEZY_DEBUG
+		__debug(F("frame length is less than 11 bytes, returning"));
+#endif
 		return Frame(CMD_ERR);
 	}
 	for (int i = 0; i < len; i++) {
@@ -28,37 +30,51 @@ Frame parseFrame(uint8_t data[], uint8_t len) {
 	Serial.println();
 	uint16_t recvChecksum = __b2u16(data[len - 2], data[len - 1]);
 	if (checksum(data, len - 2) != recvChecksum) {
+#if SUNEZY_DEBUG
 		char dbgMsg[256];
 		snprintf(dbgMsg, 256, "received checksum and calculated checksum do not match: %x vs %x ,returning", recvChecksum, checksum(data, len - 2));
 		__debug(dbgMsg);
+#endif
 		return Frame(CMD_ERR);
 	}
 	Serial.println(recvChecksum, HEX);
-	__debug("checksums match, ok");
+#if SUNEZY_DEBUG
+	__debug(F("checksums match, ok"));
+#endif
 	uint16_t preamble = __b2u16(data[0], data[1]);
 	if (preamble != SYNC) {
-		__debug("frame preamble doesn't match SYNC");
+#if SUNEZY_DEBUG
+		__debug(F("frame preamble doesn't match SYNC"));
+#endif
 		return Frame(CMD_ERR);
 	}	
-	__debug("frame preamble is SYNC, ok");
+#if SUNEZY_DEBUG
+	__debug(F("frame preamble is SYNC, ok"));
+#endif
 	uint16_t src = __b2u16(data[2], data[3]);
 	uint16_t dst = __b2u16(data[4], data[5]);
 	uint16_t cmd = __b2u16(data[6], data[7]);
 	uint8_t ploadLen = data[8];
 	if (ploadLen > MAX_PLOAD_SIZE) {
-		__debug("length of payload exceeds max size");
+#if SUNEZY_DEBUG
+		__debug(F("length of payload exceeds max size"));
+#endif
 		return Frame(CMD_ERR);
 	}
+#if SUNEZY_DEBUG
 	char debugMsg[50];
 	snprintf(debugMsg, 50, "ploadLen equals 0x%02x", ploadLen);
 	__debug(debugMsg);
+#endif
 	uint8_t* payload;
 	if (ploadLen > 0) {
 		payload = &data[9];
 	} else {
 		payload = nullptr;
 	}
-	__debug("assigned payload pointer, ok, returning Frame");
+#if SUNEZY_DEBUG
+	__debug(F("assigned payload pointer, ok, returning Frame"));
+#endif
 	return Frame(cmd, payload, ploadLen, src, dst);
 }
 
@@ -81,7 +97,9 @@ uint8_t Frame::bytes(uint8_t* buf) {
 	buf[7] = _cmd & 0xff;
 	buf[8] = _ploadLen;
 	if (_ploadLen > 0 && ! _payload) {
-		__debug("specified payload length, but no payload could be found, returning");
+#if SUNEZY_DEBUG
+		__debug(F("specified payload length, but no payload could be found, returning"));
+#endif
 		return 0;
 	}
 	for (int i = 0; i < _ploadLen; i++) {
@@ -90,6 +108,8 @@ uint8_t Frame::bytes(uint8_t* buf) {
 	uint16_t _checksum = checksum(buf, 9 + _ploadLen);
 	buf[9 + _ploadLen] = _checksum >> 8;
 	buf[10 + _ploadLen] = _checksum & 0xff;
-	__debug("converted Frame to bytes, ok, returning bytes");
+#if SUNEZY_DEBUG
+	__debug(F("converted Frame to bytes, ok, returning bytes"));
+#endif
 	return 11 + _ploadLen;
 }
