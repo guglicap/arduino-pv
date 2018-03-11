@@ -26,11 +26,6 @@ void Inverter::send(Frame frm, bool useFrameSrc) {
 #if SUNEZY_DEBUG
 	__debug(F("sending frame"));
 #endif
-	for (int i = 0; i < len; i++) {
-		Serial.print(buf[i], HEX);
-		Serial.print('-');
-	}
-	Serial.println();
 	_conn -> write(buf, len);
 }
 
@@ -63,16 +58,18 @@ Frame Inverter::receive() {
 	snprintf(dbgMsg, 50, "ploadLen equals 0x%02x", ploadLen);
 	__debug(dbgMsg);
 #endif
-	while (_conn -> available() < ploadLen + 2) {
-		if (millis() - start > RECV_TIMEOUT) {
+	uint8_t i = 0;
+	while (_conn -> available() > 0) {
+		buf[i] = _conn -> read();
+		i++;
+		while (_conn -> available() == 0 && i != ploadLen + 2) {
+			if (millis() - start > RECV_TIMEOUT) {
 #if SUNEZY_DEBUG
-			__debug(F("timed out while receiving frame, returning"));
+				__debug(F("timed out while receiving frame, returning"));
 #endif
-			return Frame(CMD_ERR);
+				return Frame(CMD_ERR);
+			}
 		}
-	}
-	for (int i = 0; i < ploadLen + 2; i++) {
-		buf[9+i] = _conn -> read();
 	}
 #if SUNEZY_DEBUG
 	__debug(F("read payload, ok, parsing frame"));
@@ -87,7 +84,7 @@ void Inverter::reset() {
 	send(Frame(CMD_RST));
 }
 
-uint8_t Inverter::discover(uint8_t* buf) {
+uint8_t Inverter::discover(char* buf) {
 #if SUNEZY_DEBUG
 	__debug(F("sending discover"));
 #endif
@@ -107,7 +104,7 @@ uint8_t Inverter::discover(uint8_t* buf) {
 	return f._ploadLen;
 }
 
-bool Inverter::begin(uint8_t* sn, uint8_t snLen, uint16_t addr) {
+bool Inverter::begin(char* sn, uint8_t snLen, uint16_t addr) {
 	uint8_t buf[50];	
 	if (snLen > 50 - 2) {
 #if SUNEZY_DEBUG
@@ -118,21 +115,22 @@ bool Inverter::begin(uint8_t* sn, uint8_t snLen, uint16_t addr) {
 	for (int i = 0; i < snLen; i++) {
 		buf[i] = sn[i];
 	}
-	buf[snLen] = addr & 0xff;
-	buf[snLen + 1] = addr >> 8;
+	buf[snLen] = addr >> 8;
+	buf[snLen + 1] = addr & 0xff;
 	Frame f(CMD_REG, buf, snLen + 2);
 	send(f);
 	f = receive();
 	return f._cmd == CMD_REG_R;
 }
 
-String Inverter::version(uint16_t dst) {
+uint8_t Inverter::version(char* buf, uint16_t dst) {
 	Frame f(CMD_VER);
 	f._dst = dst;
 	send(f);
 	f = receive();
 	if (f._cmd != CMD_VER_R) {
-		return "";
+		return 0;
 	}
-	return String((char*) f._payload);	
+	memcpy(buf, f._payload, f._ploadLen);
+	return f._ploadLen;	
 }

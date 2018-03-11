@@ -23,11 +23,6 @@ Frame parseFrame(uint8_t data[], uint8_t len) {
 #endif
 		return Frame(CMD_ERR);
 	}
-	for (int i = 0; i < len; i++) {
-		Serial.print(data[i], HEX);
-		Serial.print('-');
-	}
-	Serial.println();
 	uint16_t recvChecksum = __b2u16(data[len - 2], data[len - 1]);
 	if (checksum(data, len - 2) != recvChecksum) {
 #if SUNEZY_DEBUG
@@ -37,7 +32,6 @@ Frame parseFrame(uint8_t data[], uint8_t len) {
 #endif
 		return Frame(CMD_ERR);
 	}
-	Serial.println(recvChecksum, HEX);
 #if SUNEZY_DEBUG
 	__debug(F("checksums match, ok"));
 #endif
@@ -103,7 +97,7 @@ uint8_t Frame::bytes(uint8_t* buf) {
 		return 0;
 	}
 	for (int i = 0; i < _ploadLen; i++) {
-		buf[8 + i] = _payload[i];
+		buf[9 + i] = _payload[i];
 	}
 	uint16_t _checksum = checksum(buf, 9 + _ploadLen);
 	buf[9 + _ploadLen] = _checksum >> 8;
