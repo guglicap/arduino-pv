@@ -31,50 +31,17 @@ void Inverter::send(Frame frm, bool useFrameSrc) {
 
 Frame Inverter::receive() {
 	long start = millis();
-#if SUNEZY_DEBUG
-	__debug(F("receiving frame"));
-#endif
-	// wait until we have enough data to make a valid frame
-	while (_conn -> available() < 9) {
-		if (millis() - start > RECV_TIMEOUT) {
-#if SUNEZY_DEBUG
-			__debug(F("timed out while receiving frame, returning"));
-#endif
-			return Frame(CMD_ERR);
-		}
-	}
 	uint8_t buf[MAX_SIZE];
-	// read up to payload
-	for (int i = 0; i < 9; i++) {
-		buf[i] = _conn -> read();
-	}
-#if SUNEZY_DEBUG
-	__debug(F("read up to payload, ok"));
-#endif
-	uint8_t ploadLen = buf[8];
-	// read payload + checksum
-#if SUNEZY_DEBUG
-	char dbgMsg[50];
-	snprintf(dbgMsg, 50, "ploadLen equals 0x%02x", ploadLen);
-	__debug(dbgMsg);
-#endif
 	uint8_t i = 0;
-	while (_conn -> available() > 0) {
-		buf[i] = _conn -> read();
-		i++;
-		while (_conn -> available() == 0 && i != ploadLen + 2) {
-			if (millis() - start > RECV_TIMEOUT) {
-#if SUNEZY_DEBUG
-				__debug(F("timed out while receiving frame, returning"));
-#endif
-				return Frame(CMD_ERR);
-			}
+	while (millis() - start < RECV_TIMEOUT) {
+		if (_conn -> available() > 0) {
+			buf[i++] = _conn -> read();
+		}
+		if (i > 8 && i == buf[8] + 11) {
+			return parseFrame(buf, buf[8] + 11);
 		}
 	}
-#if SUNEZY_DEBUG
-	__debug(F("read payload, ok, parsing frame"));
-#endif
-	return parseFrame(buf, 11 + ploadLen);
+	return Frame(CMD_ERR);		
 }
 
 void Inverter::reset() {
