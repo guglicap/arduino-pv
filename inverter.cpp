@@ -110,3 +110,28 @@ uint8_t Inverter::version(char* buf, uint16_t dst) {
 	memcpy(buf, f._payload, f._ploadLen);
 	return f._ploadLen;	
 }
+
+uint8_t Inverter::statLayout(char* buf, uint16_t dst) {
+	Frame f(CMD_STL);
+	f._dst = dst;
+	send(f);
+	f = receive();
+	if (f._cmd != CMD_STL_R) {
+		return 0;
+	}
+	memcpy(buf, f._payload, f._ploadLen);
+	return f._ploadLen;
+}
+
+
+uint8_t Inverter::paramLayout(char* buf, uint16_t dst) {
+	Frame f(CMD_PRL);
+	f._dst = dst;
+	send(f);
+	f = receive();
+	if (f._cmd != CMD_PRL_R) {
+		return 0;
+	}
+	memcpy(buf, f._payload, f._ploadLen);
+	return f._ploadLen;
+}

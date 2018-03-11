@@ -19,6 +19,8 @@ class Inverter
 		uint8_t discover(char* buf);
 		bool begin(char* sn, uint8_t snLen, uint16_t addr = ADDR_DEV);
 		uint8_t version(char* ver, uint16_t dst = ADDR_DEV);
+		uint8_t statLayout(char* buf, uint16_t dst = ADDR_DEV);
+		uint8_t paramLayout(char* buf, uint16_t dst = ADDR_DEV);
 	private:
 		Stream* _conn;
 		uint16_t _addr;
