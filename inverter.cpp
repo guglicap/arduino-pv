@@ -31,6 +31,9 @@ void Inverter::send(Frame frm, bool useFrameSrc) {
 
 Frame Inverter::receive() {
 	long start = millis();
+#if SUNEZY_DEBUG
+	__debug(F("receiving frame"));
+#endif
 	uint8_t buf[MAX_SIZE];
 	uint8_t i = 0;
 	while (millis() - start < RECV_TIMEOUT) {
@@ -38,9 +41,15 @@ Frame Inverter::receive() {
 			buf[i++] = _conn -> read();
 		}
 		if (i > 8 && i == buf[8] + 11) {
+#if SUNEZY_DEBUG
+			__debug(F("received frame ok, parsing..."));
+#endif
 			return parseFrame(buf, buf[8] + 11);
 		}
 	}
+#if SUNEZY_DEBUG
+	__debug(F("timed out while receiving frame"));
+#endif
 	return Frame(CMD_ERR);		
 }
 
