@@ -35,5 +35,5 @@ struct StatusElem {
 	uint16_t value;
 };
 
-uint8_t interpretData(StatusElem* status, char* layout, uint8_t* data, uint8_t dataLen);
+uint8_t interpretData(StatusElem* status, char* layout, uint8_t layoutLen, uint8_t* data, uint8_t dataLen);
 #endif
