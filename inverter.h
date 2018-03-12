@@ -8,6 +8,7 @@
 #include "stdint.h"
 #include "SoftwareSerial.h"
 #include "frame.h"
+#include "protocol.h"
 
 class Inverter 
 {
@@ -16,11 +17,12 @@ class Inverter
 		Frame receive();
 		void send(Frame frm, bool useFrameSrc = false);
 		void reset();
-		uint8_t discover(char* buf);
-		bool begin(char* sn, uint8_t snLen, uint16_t addr = ADDR_DEV);
-		uint8_t version(char* ver, uint16_t dst = ADDR_DEV);
-		uint8_t statLayout(char* buf, uint16_t dst = ADDR_DEV);
-		uint8_t paramLayout(char* buf, uint16_t dst = ADDR_DEV);
+		char* discover(char* buf);
+		bool begin(char* sn, uint16_t addr = ADDR_DEV);
+		char* version(char* ver, uint16_t dst = ADDR_DEV);
+		char* statLayout(char* buf, uint16_t dst = ADDR_DEV);
+		char* paramLayout(char* buf, uint16_t dst = ADDR_DEV);
+		uint8_t status(StatusElem* status, char* layout, uint16_t dst = ADDR_DEV);
 	private:
 		Stream* _conn;
 		uint16_t _addr;

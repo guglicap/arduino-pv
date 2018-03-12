@@ -60,7 +60,7 @@ void Inverter::reset() {
 	send(Frame(CMD_RST));
 }
 
-uint8_t Inverter::discover(char* buf) {
+char* Inverter::discover(char* buf) {
 #if SUNEZY_DEBUG
 	__debug(F("sending discover"));
 #endif
@@ -77,29 +77,29 @@ uint8_t Inverter::discover(char* buf) {
 		return 0;
 	}
 	memcpy(buf, f._payload, f._ploadLen);
-	return f._ploadLen;
+	buf[f._ploadLen] = '\0';
+	return buf;
 }
 
-bool Inverter::begin(char* sn, uint8_t snLen, uint16_t addr) {
-	uint8_t buf[50];	
-	if (snLen > 50 - 2) {
+bool Inverter::begin(char* sn, uint16_t addr) {
+	uint8_t buf[50];
+	uint8_t len = strlen(sn);
+	if (len > 50 - 2) {
 #if SUNEZY_DEBUG
 		__debug(F("serial number is too long, returning"));
 #endif
 		return false;
 	}
-	for (int i = 0; i < snLen; i++) {
-		buf[i] = sn[i];
-	}
-	buf[snLen] = addr >> 8;
-	buf[snLen + 1] = addr & 0xff;
-	Frame f(CMD_REG, buf, snLen + 2);
+	memcpy(buf, sn, len);
+	buf[len] = addr >> 8;
+	buf[len + 1] = addr & 0xff;
+	Frame f(CMD_REG, buf, len + 2);
 	send(f);
 	f = receive();
 	return f._cmd == CMD_REG_R;
 }
 
-uint8_t Inverter::version(char* buf, uint16_t dst) {
+char* Inverter::version(char* buf, uint16_t dst) {
 	Frame f(CMD_VER);
 	f._dst = dst;
 	send(f);
@@ -108,10 +108,11 @@ uint8_t Inverter::version(char* buf, uint16_t dst) {
 		return 0;
 	}
 	memcpy(buf, f._payload, f._ploadLen);
-	return f._ploadLen;	
+	buf[f._ploadLen] = '\0';
+	return buf;	
 }
 
-uint8_t Inverter::statLayout(char* buf, uint16_t dst) {
+char* Inverter::statLayout(char* buf, uint16_t dst) {
 	Frame f(CMD_STL);
 	f._dst = dst;
 	send(f);
@@ -120,11 +121,12 @@ uint8_t Inverter::statLayout(char* buf, uint16_t dst) {
 		return 0;
 	}
 	memcpy(buf, f._payload, f._ploadLen);
-	return f._ploadLen;
+	buf[f._ploadLen] = '\0';
+	return buf;
 }
 
 
-uint8_t Inverter::paramLayout(char* buf, uint16_t dst) {
+char* Inverter::paramLayout(char* buf, uint16_t dst) {
 	Frame f(CMD_PRL);
 	f._dst = dst;
 	send(f);
@@ -133,5 +135,17 @@ uint8_t Inverter::paramLayout(char* buf, uint16_t dst) {
 		return 0;
 	}
 	memcpy(buf, f._payload, f._ploadLen);
-	return f._ploadLen;
+	buf[f._ploadLen] = '\0';
+	return buf;
+}
+
+uint8_t Inverter::status(StatusElem* status, char* layout, uint16_t dst) {
+	Frame f(CMD_STA);
+	f._dst = dst;
+	send(f);
+	f = receive();
+	if (f._cmd != CMD_STA_R) {
+		return 0;
+	}
+	return interpretData(status, layout, f._payload, f._ploadLen);
 }
