@@ -26,7 +26,7 @@ uint8_t interpretData(StatusElem* status, char* layout, uint8_t layoutLen, uint8
 			continue;
 		}
 		uint16_t value = *(data++) << 8 | *(data++);
-		status[x] = StatusElem{value, name};
+		status[x] = StatusElem{name, value};
 		x++;
 	}
 	return x;
