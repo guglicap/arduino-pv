@@ -3,7 +3,6 @@
 InverterStatus::InverterStatus() {
 	temp = 0;
 	vpv = 0;
-	ipv = 0;
 	iac = 0;
 	vac = 0;
 	fac = 0;

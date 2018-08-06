@@ -30,7 +30,6 @@ class InverterStatus {
 		InverterStatus();
 		uint16_t temp,
 			 vpv,
-			 ipv,
 			 iac,
 			 vac,
 			 fac,
