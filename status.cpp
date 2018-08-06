@@ -8,6 +8,7 @@ InverterStatus::InverterStatus() {
 	fac = 0;
 	pac = 0;
 	zac = 0;
+	etoday = 0;
 	etotal = 0;
 	htotal = 0;
 	mode = 0;
