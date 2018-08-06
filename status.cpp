@@ -66,6 +66,10 @@ bool InverterStatus::parseLayoutElement(uint16_t code, uint16_t value) {
 		case 0x00:
 			temp = value;
 			break;
+			
+		case 0x0d:
+			etoday = value;
+			break;
 
 		case 0x40:
 			vpv = value;
