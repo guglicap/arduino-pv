@@ -37,6 +37,7 @@ Frame Inverter::receive() {
 	uint8_t buf[MAX_SIZE];
 	uint8_t i = 0;
 	while (millis() - start < RECV_TIMEOUT) {
+		yield();
 		if (_conn -> available() > 0) {
 			buf[i++] = _conn -> read();
 		}
