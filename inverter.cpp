@@ -143,7 +143,7 @@ void Inverter::status(InverterStatus* status, char* layout, uint8_t layoutLen, u
 	send(f);
 	f = receive();
 	if (f._cmd != CMD_STA_R) {
-		return 0;
+		return;
 	}
 	interpretData(status, layout, layoutLen, f._payload, f._ploadLen);
 }
