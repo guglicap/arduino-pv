@@ -12,7 +12,13 @@ InverterStatus::InverterStatus() {
 	etotal = 0;
 	htotal = 0;
 	mode = 0;
-	error = 0;	
+	error = 0;
+	err_gv = 0;
+    err_gf = 0;
+    err_gz = 0;
+    err_temp = 0;
+    err_pv1 = 0;
+    err_gfc1 = 0;
 }
 
 void interpretData(InverterStatus* status, char* layout, uint8_t layoutLen, uint8_t* data, uint8_t dataLen) {
@@ -97,6 +103,30 @@ bool InverterStatus::parseLayoutElement(uint16_t code, uint16_t value) {
 
 		case 0x4c:
 			mode = value;
+			break;
+			
+		case 0x78:
+			err_gv = value;
+			break;
+      
+		case 0x79:
+			err_gf = value;
+			break;
+      
+		case 0x7a:
+			err_gz = value;
+			break;
+      
+		case 0x7b:
+			err_temp = value;
+			break;
+      
+		case 0x7c:
+			err_pv1 = value;
+			break;
+      
+		case 0x7d:
+			err_gfc1 = value;
 			break;
 
 		default:
