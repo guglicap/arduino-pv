@@ -84,5 +84,5 @@ class InverterStatus {
 		bool parseLayoutElement(uint16_t code, uint16_t value);
 };
 
-void interpretData(InverterStatus* status, char* layout, uint8_t layoutLen, uint8_t* data, uint8_t dataLen);
+void interpretData(InverterStatus& status, char* layout, uint8_t layoutLen, uint8_t* data, uint8_t dataLen);
 #endif

@@ -136,6 +136,6 @@ bool Inverter::status(InverterStatus& status, String& layout, uint16_t dst) {
 	if (f._cmd != CMD_STA_R) {
 		return false;
 	}
-	interpretData(status, layout, layoutLen, f._payload, f._ploadLen);
+	interpretData(status, layout.c_str(), layout.length(), f._payload, f._ploadLen);
 	return true;
 }

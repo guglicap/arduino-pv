@@ -21,13 +21,13 @@ InverterStatus::InverterStatus() {
     err_gfc1 = 0;
 }
 
-void interpretData(InverterStatus* status, char* layout, uint8_t layoutLen, uint8_t* data, uint8_t dataLen) {
+void interpretData(InverterStatus& status, char* layout, uint8_t layoutLen, uint8_t* data, uint8_t dataLen) {
   char* le = layout + layoutLen;
   uint8_t* de = data + dataLen;
   while (layout < le && data < de) {
     uint16_t value = *data << 8 | *(data + 1);
     uint16_t code = *layout;
-    bool b = status->parseLayoutElement(code, value);
+    bool b = status.parseLayoutElement(code, value);
 #if SUNEZY_DEBUG
     if (!b) {
       Serial.print("@");
