@@ -13,18 +13,19 @@
 class Inverter 
 {
 	public:
-		explicit Inverter(Stream* conn = &Serial, uint16_t addr = ADDR_HOST);
+		explicit Inverter(Stream& conn = Serial, uint16_t addr = ADDR_HOST);
 		Frame receive();
 		void send(Frame frm, bool useFrameSrc = false);
 		void reset();
-		char* discover(char* buf);
-		bool begin(char* sn, uint16_t addr = ADDR_DEV);
-		char* version(char* ver, uint16_t dst = ADDR_DEV);
-		uint8_t statLayout(char* buf, uint16_t dst = ADDR_DEV);
-		uint8_t paramLayout(char* buf, uint16_t dst = ADDR_DEV);
-		bool status(InverterStatus* status, char* layout, uint8_t layoutLen, uint16_t dst = ADDR_DEV);
+		String discover(); // returns serial number of connected inverter
+		bool begin(String& sn, uint16_t addr = ADDR_DEV);
+		String version(uint16_t dst = ADDR_DEV);
+		String statLayout(uint16_t dst = ADDR_DEV);
+		String paramLayout(uint16_t dst = ADDR_DEV);
+		bool status(InverterStatus& status, String& layout, uint16_t dst = ADDR_DEV);
 	private:
-		Stream* _conn;
+        char _buf[MAX_SIZE];
+		Stream& _conn;
 		uint16_t _addr;
 };
 #endif

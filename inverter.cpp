@@ -1,6 +1,6 @@
 #include "inverter.h"
 
-Inverter::Inverter(Stream* conn, uint16_t addr) {
+Inverter::Inverter(Stream& conn, uint16_t addr) {
 	_conn = conn;
 	_addr = addr;
 }
@@ -12,11 +12,10 @@ void Inverter::send(Frame frm, bool useFrameSrc) {
 #endif
 		return;
 	}
-	uint8_t buf[MAX_SIZE];
 	if (!useFrameSrc) {
 		frm._src = _addr;
 	}
-	uint8_t len = frm.bytes(buf);
+	uint8_t len = frm.bytes(_buf);
 	if (len == 0) {
 #if SUNEZY_DEBUG
 		__debug(F("error converting Frame to bytes, returning"));
@@ -26,7 +25,7 @@ void Inverter::send(Frame frm, bool useFrameSrc) {
 #if SUNEZY_DEBUG
 	__debug(F("sending frame"));
 #endif
-	_conn -> write(buf, len);
+	_conn.write(_buf, len);
 }
 
 Frame Inverter::receive() {
@@ -34,24 +33,23 @@ Frame Inverter::receive() {
 #if SUNEZY_DEBUG
 	__debug(F("receiving frame"));
 #endif
-	uint8_t buf[MAX_SIZE];
 	uint8_t i = 0;
 	while (millis() - start < RECV_TIMEOUT) {
 		yield();
-		if (_conn -> available() > 0) {
-			buf[i++] = _conn -> read();
+		if (_conn.available() > 0) {
+			_buf[i++] = _conn.read();
 		}
-		if (i > 8 && i == buf[8] + 11) {
+		if (i > 8 && i == _buf[8] + 11) {
 #if SUNEZY_DEBUG
 			__debug(F("received frame ok, parsing..."));
 #endif
-			return parseFrame(buf, buf[8] + 11);
+			return parseFrame(_buf, _buf[8] + 11);
 		}
 	}
 #if SUNEZY_DEBUG
 	__debug(F("timed out while receiving frame"));
 #endif
-	return Frame(CMD_ERR);		
+	return Frame(CMD_ERR);
 }
 
 void Inverter::reset() {
@@ -61,7 +59,7 @@ void Inverter::reset() {
 	send(Frame(CMD_RST));
 }
 
-char* Inverter::discover(char* buf) {
+String Inverter::discover() {
 #if SUNEZY_DEBUG
 	__debug(F("sending discover"));
 #endif
@@ -75,70 +73,62 @@ char* Inverter::discover(char* buf) {
 		__debug(dbgMsg);
 		__debug(F("invalid response frame, returning"));
 #endif
-		return 0;
+		return "";
 	}
-	memcpy(buf, f._payload, f._ploadLen);
-	buf[f._ploadLen] = '\0';
-	return buf;
+	memcpy(_buf, f._payload, f._ploadLen);
+	_buf[f._ploadLen] = '\0';
+	return String(_buf);
 }
 
-bool Inverter::begin(char* sn, uint16_t addr) {
-	uint8_t buf[50];
-	uint8_t len = strlen(sn);
-	if (len > 50 - 2) {
-#if SUNEZY_DEBUG
-		__debug(F("serial number is too long, returning"));
-#endif
-		return false;
-	}
-	memcpy(buf, sn, len);
-	buf[len] = addr >> 8;
-	buf[len + 1] = addr & 0xff;
-	Frame f(CMD_REG, buf, len + 2);
+bool Inverter::begin(String& sn, uint16_t addr) {
+    uint16_t len = sn.length();
+	memcpy(_buf, sn.c_str(), len);
+	_buf[len] = addr >> 8;
+	_buf[len + 1] = addr & 0xff;
+	Frame f(CMD_REG, _buf, len + 2);
 	send(f);
 	f = receive();
 	return f._cmd == CMD_REG_R;
 }
 
-char* Inverter::version(char* buf, uint16_t dst) {
+String Inverter::version(uint16_t dst) {
 	Frame f(CMD_VER);
 	f._dst = dst;
 	send(f);
 	f = receive();
 	if (f._cmd != CMD_VER_R) {
-		return 0;
+		return "";
 	}
-	memcpy(buf, f._payload, f._ploadLen);
-	buf[f._ploadLen] = '\0';
-	return buf;	
+	memcpy(_buf, f._payload, f._ploadLen);
+	_buf[f._ploadLen] = '\0';
+	return String(_buf);
 }
 
-uint8_t Inverter::statLayout(char* buf, uint16_t dst) {
+String Inverter::statLayout(uint16_t dst) {
 	Frame f(CMD_STL);
 	f._dst = dst;
 	send(f);
 	f = receive();
-	if (f._cmd != CMD_STL_R) {	
-		return 0;
-	}	
-	memcpy(buf, f._payload, f._ploadLen);	
-	return f._ploadLen;
+	if (f._cmd != CMD_STL_R) {
+		return "";
+	}
+	memcpy(_buf, f._payload, f._ploadLen);
+	return String(_buf);
 }
 
-
-uint8_t Inverter::paramLayout(char* buf, uint16_t dst) {
+String Inverter::paramLayout(uint16_t dst) {
 	Frame f(CMD_PRL);
 	f._dst = dst;
 	send(f);
 	f = receive();
 	if (f._cmd != CMD_PRL_R) {
-		return 0;
+		return "";
 	}
-	memcpy(buf, f._payload, f._ploadLen);
-	return f._ploadLen;
+	memcpy(_buf, f._payload, f._ploadLen);
+	return String(_buf);
 }
 
-bool Inverter::status(InverterStatus* status, char* layout, uint8_t layoutLen, uint16_t dst) {
+bool Inverter::status(InverterStatus& status, String& layout, uint16_t dst) {
 	Frame f(CMD_STA);
 	f._dst = dst;
 	send(f);
