@@ -5,7 +5,7 @@
 
 SoftwareSerial conn(7, 4, true); // setup serial connection with inverter. With my SunEzy 2801 inverse logic is needed.
 Inverter inv(&conn); // create Inverter object
-uint8_t buf[MAX_PLOAD_SIZE]; // initialize a buffer to store inverter responses
+char buf[MAX_PLOAD_SIZE]; // initialize a buffer to store inverter responses
 uint8_t layoutLen; // length of the status layout
 
 void setup() {
