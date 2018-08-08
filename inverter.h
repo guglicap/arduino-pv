@@ -22,7 +22,7 @@ class Inverter
 		char* version(char* ver, uint16_t dst = ADDR_DEV);
 		uint8_t statLayout(char* buf, uint16_t dst = ADDR_DEV);
 		uint8_t paramLayout(char* buf, uint16_t dst = ADDR_DEV);
-		void status(InverterStatus* status, char* layout, uint8_t layoutLen, uint16_t dst = ADDR_DEV);
+		bool status(InverterStatus* status, char* layout, uint8_t layoutLen, uint16_t dst = ADDR_DEV);
 	private:
 		Stream* _conn;
 		uint16_t _addr;

@@ -138,13 +138,14 @@ uint8_t Inverter::paramLayout(char* buf, uint16_t dst) {
 	return f._ploadLen;
 }
 
-void Inverter::status(InverterStatus* status, char* layout, uint8_t layoutLen, uint16_t dst) {
+bool Inverter::status(InverterStatus* status, char* layout, uint8_t layoutLen, uint16_t dst) {
 	Frame f(CMD_STA);
 	f._dst = dst;
 	send(f);
 	f = receive();
 	if (f._cmd != CMD_STA_R) {
-		return;
+		return false;
 	}
 	interpretData(status, layout, layoutLen, f._payload, f._ploadLen);
+	return true;
 }
