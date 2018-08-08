@@ -4,7 +4,7 @@
 #include "stdint.h"
 #include "debug.h"
 
-#define	MAX_SIZE 		256
+#define	MAX_SIZE 		300
 #define MAX_PLOAD_SIZE		MAX_SIZE - 11
 #define	SYNC 			0xaaaa		// 2 sync bytes preamble "1010101010101010"
 #define	ADDR_DEFAULT 	0x0000		// Broadcast address
