@@ -63,7 +63,7 @@
 class InverterStatus {
 	public:
 		InverterStatus();
-		uint16_t temp,
+		uint32_t temp,
 			 vpv,
 			 iac,
 			 vac,
