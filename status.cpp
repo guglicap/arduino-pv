@@ -19,14 +19,16 @@ InverterStatus::InverterStatus() {
     err_temp = 0;
     err_pv1 = 0;
     err_gfc1 = 0;
+    layoutLen = 0;
 }
 
-void interpretData(InverterStatus& status, char* layout, uint8_t layoutLen, uint8_t* data, uint8_t dataLen) {
-  char* le = layout + layoutLen;
+void interpretData(InverterStatus& status, uint8_t* data, uint8_t dataLen) {
+  uint8_t* le = status.layout + status.layoutLen;
   uint8_t* de = data + dataLen;
-  while (layout < le && data < de) {
+  uint8_t* l = status.layout;
+  while (l < le && data < de) {
     uint16_t value = *data << 8 | *(data + 1);
-    uint16_t code = *layout;
+    uint16_t code = *l;
     bool b = status.parseLayoutElement(code, value);
 #if SUNEZY_DEBUG
     if (!b) {
@@ -41,7 +43,7 @@ void interpretData(InverterStatus& status, char* layout, uint8_t layoutLen, uint
       Serial.println(value);
     }
 #endif
-    layout += 1;
+    l += 1;
     data += 2;
   }
 }

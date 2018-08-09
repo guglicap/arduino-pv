@@ -1,6 +1,6 @@
 #include "inverter.h"
 
-Inverter::Inverter(Stream& conn, uint16_t addr) {
+Inverter::Inverter(Stream* conn, uint16_t addr) {
 	_conn = conn;
 	_addr = addr;
 }
@@ -25,7 +25,7 @@ void Inverter::send(Frame frm, bool useFrameSrc) {
 #if SUNEZY_DEBUG
 	__debug(F("sending frame"));
 #endif
-	_conn.write(_buf, len);
+	_conn -> write(_buf, len);
 }
 
 Frame Inverter::receive() {
@@ -36,8 +36,8 @@ Frame Inverter::receive() {
 	uint8_t i = 0;
 	while (millis() - start < RECV_TIMEOUT) {
 		yield();
-		if (_conn.available() > 0) {
-			_buf[i++] = _conn.read();
+		if (_conn -> available() > 0) {
+			_buf[i++] = _conn -> read();
 		}
 		if (i > 8 && i == _buf[8] + 11) {
 #if SUNEZY_DEBUG
@@ -77,7 +77,7 @@ String Inverter::discover() {
 	}
 	memcpy(_buf, f._payload, f._ploadLen);
 	_buf[f._ploadLen] = '\0';
-	return String(_buf);
+	return String((char*) _buf);
 }
 
 bool Inverter::begin(String& sn, uint16_t addr) {
@@ -101,34 +101,48 @@ String Inverter::version(uint16_t dst) {
 	}
 	memcpy(_buf, f._payload, f._ploadLen);
 	_buf[f._ploadLen] = '\0';
-	return String(_buf);
+	return String((char*) _buf);
 }
 
-String Inverter::statLayout(uint16_t dst) {
+uint8_t Inverter::_statLayout(uint16_t dst) {
 	Frame f(CMD_STL);
 	f._dst = dst;
 	send(f);
 	f = receive();
 	if (f._cmd != CMD_STL_R) {
-		return "";
+		return 0;
 	}
 	memcpy(_buf, f._payload, f._ploadLen);
-	return String(_buf);
+	return f._ploadLen;
 }
 
-String Inverter::paramLayout(uint16_t dst) {
+uint8_t Inverter::_paramLayout(uint16_t dst) {
 	Frame f(CMD_PRL);
 	f._dst = dst;
 	send(f);
 	f = receive();
 	if (f._cmd != CMD_PRL_R) {
-		return "";
+		return 0;
 	}
 	memcpy(_buf, f._payload, f._ploadLen);
-	return String(_buf);
+	return f._ploadLen;
 }
 
-bool Inverter::status(InverterStatus& status, String& layout, uint16_t dst) {
+bool Inverter::status(InverterStatus& status, uint16_t dst) {
+    if (status.layoutLen == 0) {
+        uint8_t layoutLen = _statLayout();
+        if (layoutLen > MAX_LAYOUT_SIZE) {
+#if SUNEZY_DEBUG
+            __debug(F("layout is too long, increase MAX_LAYOUT_SIZE in status.h"));
+#endif
+            return false;
+        }
+        if (layoutLen == 0) {
+            return false;
+        }
+        memcpy(status.layout, _buf, layoutLen);
+        status.layoutLen = layoutLen;
+    }
 	Frame f(CMD_STA);
 	f._dst = dst;
 	send(f);
@@ -136,6 +150,6 @@ bool Inverter::status(InverterStatus& status, String& layout, uint16_t dst) {
 	if (f._cmd != CMD_STA_R) {
 		return false;
 	}
-	interpretData(status, layout.c_str(), layout.length(), f._payload, f._ploadLen);
+	interpretData(status, f._payload, f._ploadLen);
 	return true;
 }
