@@ -1,0 +1,8 @@
+Frame	KEYWORD1
+InverterStatus	KEYWORD1
+Inverter	KEYWORD1
+reset	KEYWORD2
+discover	KEYWORD2
+begin	KEYWORD2
+version	KEYWORD2
+status	KEYWORD2

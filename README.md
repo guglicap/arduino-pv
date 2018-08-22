@@ -1,4 +1,4 @@
-This library allows communication of an Arduino with a SunEzy inverter, connected via the serial port.
+This library allows communication of an Arduino with a SunEzy / Orion inverter, connected via the serial port.
 
 Functionality is mostly complete, the only missing feature (that I know of) is setting inverter parameters.
 
@@ -23,4 +23,4 @@ Here's a table with all the status properties
 
 Based on https://archive.codeplex.com/?p=pv
 
-Please note that, even though the python library has only been tested with a CMS-2000 inverter and a SunEzy 600E, it also worked on my SunEzy 2810, and it believe this would be the case for every SunEzy inverter, as long as it has a serial port and can be queried by the SunEzy Control software.
+Please note that, even though the python library has only been tested with an Orion CMS-2000 inverter and a SunEzy 600E, it also worked on my SunEzy 2810, and it believe this would be the case for every inverter, as long as it has a serial port and can be queried by the SunEzy Control software or the equivalent Orion software.

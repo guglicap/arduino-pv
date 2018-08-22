@@ -1,0 +1,17 @@
+{
+    "name": "arduino-pv",
+    "keywords": "photovoltaic, energy-monitor, pv, solar, sunezy, orion, cms2000",
+    "description": "Arduino Library to communicate with SunEzy / Orion inverters.",
+    "homepage": "https://github.com/guglicap/arduino-pv.git",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/guglicap/arduino-pv.git"
+    },
+    "version": "1.0.0",
+    "authors": {
+        "name": "guglicap"
+    },
+    "frameworks": "arduino",
+    "platforms": "*"
+}
+
