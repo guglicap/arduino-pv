@@ -12,10 +12,11 @@ void Inverter::send(Frame frm, bool useFrameSrc) {
 #endif
 		return;
 	}
+	uint8_t buf[MAX_SIZE];
 	if (!useFrameSrc) {
 		frm._src = _addr;
 	}
-	uint8_t len = frm.bytes(_buf);
+	uint8_t len = frm.bytes(buf);
 	if (len == 0) {
 #if SUNEZY_DEBUG
 		__debug(F("error converting Frame to bytes, returning"));
@@ -25,7 +26,7 @@ void Inverter::send(Frame frm, bool useFrameSrc) {
 #if SUNEZY_DEBUG
 	__debug(F("sending frame"));
 #endif
-	_conn -> write(_buf, len);
+	_conn -> write(buf, len);
 }
 
 Frame Inverter::receive() {

@@ -36,8 +36,6 @@ void interpretData(InverterStatus& status, uint8_t* data, uint8_t dataLen) {
       Serial.print(__func__);
       Serial.print("\t");
       Serial.print("unknown code: 0x");
-      Serial.print(*layout, HEX);
-      Serial.print(" or 0x");
       Serial.print(code, HEX);
       Serial.print(" value: ");
       Serial.println(value);
