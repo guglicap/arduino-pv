@@ -17,13 +17,14 @@ class Inverter
 		Frame receive();
 		void send(Frame frm, bool useFrameSrc = false);
 		void reset();
-		char* discover(char* buf);
-		bool begin(char* sn, uint16_t addr = ADDR_DEV);
-		char* version(char* ver, uint16_t dst = ADDR_DEV);
-		uint8_t statLayout(char* buf, uint16_t dst = ADDR_DEV);
-		uint8_t paramLayout(char* buf, uint16_t dst = ADDR_DEV);
-		bool status(InverterStatus* status, char* layout, uint8_t layoutLen, uint16_t dst = ADDR_DEV);
+		String discover(); // returns serial number of connected inverter
+		bool begin(String& sn, uint16_t addr = ADDR_DEV);
+		String version(uint16_t dst = ADDR_DEV);
+		bool status(InverterStatus& status, uint16_t dst = ADDR_DEV);
 	private:
+        uint8_t _buf[MAX_SIZE];
+		uint8_t _statLayout(uint16_t dst = ADDR_DEV);
+		uint8_t _paramLayout(uint16_t dst = ADDR_DEV);
 		Stream* _conn;
 		uint16_t _addr;
 };

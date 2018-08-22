@@ -2,6 +2,8 @@
 #define SUNEZY_INVERTER_STATUS
 #include "stdint.h"
 
+#define MAX_LAYOUT_SIZE 50 //theoretical maximum is MAX_PLOAD_SIZE, using 50 to save memory
+
 /*
    code, divisor, name
 
@@ -82,7 +84,9 @@ class InverterStatus {
              err_pv1,
              err_gfc1;
 		bool parseLayoutElement(uint16_t code, uint16_t value);
+        uint8_t layout[MAX_LAYOUT_SIZE];
+        uint8_t layoutLen;
 };
 
-void interpretData(InverterStatus* status, char* layout, uint8_t layoutLen, uint8_t* data, uint8_t dataLen);
+void interpretData(InverterStatus& status, uint8_t* data, uint8_t dataLen);
 #endif
